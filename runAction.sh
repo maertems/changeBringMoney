@@ -27,7 +27,7 @@ echo "Start script"
 
 if [ "$go" == "prod" ]
 then
-	waitDelay=`shuf -i 75-120 -n 1`
+	waitDelay=`shuf -i 75-1200 -n 1`
 	echo "Waiting $waitDelay before doing somthing...."
 	sleep $waitDelay
 else
