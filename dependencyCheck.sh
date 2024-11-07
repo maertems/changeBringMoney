@@ -2,7 +2,7 @@
 
 #-- test bin we use
 
-for i in bc shuf curl date find
+for i in bc shuf curl date find cut
 do
 	#-- check soft
 	`$i --version >/dev/null 2>/dev/null`
