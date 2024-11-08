@@ -54,7 +54,7 @@ To close and send GPS points for an open trip :
 To be automatic, use /etc/crontab with this line
 
 ```
-0,30    7,9,16,18       * * *   root    /home/changeBringMoney/runAction.sh auto prod >/dev/null 2>/dev/null
+0,30	7,9,16,18	* * 1,2,3,4,5	root	/home/changeBringMoney/runAction.sh auto prod >>/tmp/ccr.log 2>>/tmp/ccr.log
 ```
 
 For all trip, there is some logs in 
