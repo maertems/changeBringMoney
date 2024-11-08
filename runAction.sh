@@ -22,8 +22,53 @@ range_long=`echo "$personalData" | grep "range_long=" | cut -d \= -f 2`
 
 ##-- / END of data
 
+#-- Check we are running only once
+#isRunning=`ps auwx | grep runAction | grep -v grep | wc -l`
+#if [ $isRunning -gt 1 ]
+#then
+#	echo "Script already running... exit"
+#	exit;
+#fi
+
 
 echo "Start script"
+
+
+#-- check actual time
+myDateNow=`date -u +%s`
+
+myDay=`date -u +"%F"`
+midDay=`date -u -d "${myDay} 12:00:00" +%s`
+trip=""
+endDate=""
+isOpenDay="no"
+
+#-- check if we are in an open days. weeks without off days and week end
+if [ -f ${myHome}/openDays ]
+then
+	for week in `cat ${myHome}/openDays | sed -e "s/},{/\n/g" | sed -e "s/\[{//" | sed -e "s/}\]//" | cut -d \" -f 4,8`
+	do
+
+        	begin=`echo $week | cut -d \" -f 1`
+        	end=`echo $week | cut -d \" -f 2`
+
+        	#echo "Week from $begin to $end"
+
+        	if [ "$myDay" \> "$begin" ] && [ "$myDay" \< "$end" ] || [ "$myDay" == "$begin" ] ||  [ "$myDay" == "$end" ]
+        	then
+                	#echo "   -> found $day"
+			isOpenDay="yes"
+        	fi
+	done
+
+	if [ "$isOpenDay" == "no" ] && [ "$go" == "prod" ]
+	then
+		echo "Not an open day. exit "
+		exit
+	fi
+fi
+
+
 
 if [ "$go" == "prod" ]
 then
@@ -35,14 +80,6 @@ else
 fi
 
 
-
-#-- check actual time
-myDateNow=`date -u +%s`
-
-myDay=`date -u +"%F"`
-midDay=`date -u -d "${myDay} 12:00:00" +%s`
-trip=""
-endDate=""
 
 if [ $myDateNow -le $midDay ]
 then
@@ -128,6 +165,9 @@ fi
 
 echo "action: $action"
 echo "trip: $trip"
+echo "openDay: $isOpenDay"
+
+
 
 
 
@@ -175,7 +215,7 @@ curl -X POST -d ${data} -A ${userAgent} -b $fileCookie \
 
 ##-- to emulate app
 curl -H "Authorization: Bearer ${token}"  -A ${userAgent} https://xn--changerarapporte-ipb.fr/back-inscription-programme/mon-compte >/dev/null 2>/dev/null
-curl -H "Authorization: Bearer ${token}"  -A ${userAgent} https://xn--changerarapporte-ipb.fr/back-declaration-effacement/jours-autorises >/dev/null 2>/dev/null
+curl -H "Authorization: Bearer ${token}"  -A ${userAgent} https://xn--changerarapporte-ipb.fr/back-declaration-effacement/jours-autorises >${myHome}/openDays 2>/dev/null
 curl -H "Authorization: Bearer ${token}"  -A ${userAgent} "https://xn--changerarapporte-ipb.fr/back-restitution-informations/mes-infos/effacements?year=2024&month=9" >/dev/null 2>/dev/null
 curl -H "Authorization: Bearer ${token}"  -A ${userAgent} "https://xn--changerarapporte-ipb.fr/back-restitution-informations/mes-infos/effacements?year=2024&month=10" >/dev/null 2>/dev/null
 curl -H "Authorization: Bearer ${token}"  -A ${userAgent} "https://xn--changerarapporte-ipb.fr/back-restitution-informations/mes-infos/effacements?year=2024&month=11" >/dev/null 2>/dev/null
@@ -251,17 +291,17 @@ then
 
 	#-- define original position
 	rangeLatTemp=`echo "$range_lat*100000000000000*2" | bc -l | cut -d \. -f 1`
-	rangeLongTemp=`echo "$range_long*100000000000000*2" | bc -l | cut -d \. -f 1`
+	rangeLongTemp=`echo "$range_long*10000000000000000*2" | bc -l | cut -d \. -f 1`
 	gpsRandomLat=`shuf -i 0-${rangeLatTemp} -n 1`
 	gpsRandomLong=`shuf -i 0-${rangeLongTemp} -n 1`
 	gpsRandomLat=`echo "$gpsRandomLat/100000000000000" | bc -l`
-	gpsRandomLong=`echo "$gpsRandomLong/100000000000000" | bc -l`
+	gpsRandomLong=`echo "$gpsRandomLong/10000000000000000" | bc -l`
 
 	latInit=`echo "$latOrig-$range_lat" | bc -l`
 	longInit=`echo "$longOrig-$range_long" | bc -l`
 
 	lat=`echo "$latInit + $gpsRandomLat" | bc -l | sed -e "s/000000$//"`
-	long=`echo "$longInit + $gpsRandomLong" | bc -l | sed -e "s/000000$//"`
+	long=`echo "$longInit + $gpsRandomLong" | bc -l | sed -e "s/0000$//"`
 
 
 	data="{\"finDateTime\": \"${endDate}\",\"suiviHoraires\": ["
@@ -280,14 +320,14 @@ then
 		then
 			#need to change GPS values
 			rangeLatTemp=`echo "$range_lat*100000000000000*2" | bc -l | cut -d \. -f 1`
-		        rangeLongTemp=`echo "$range_long*100000000000000*2" | bc -l | cut -d \. -f 1`
+		        rangeLongTemp=`echo "$range_long*10000000000000000*2" | bc -l | cut -d \. -f 1`
         		gpsRandomLat=`shuf -i 0-${rangeLatTemp} -n 1`
         		gpsRandomLong=`shuf -i 0-${rangeLongTemp} -n 1`
         		gpsRandomLat=`echo "$gpsRandomLat/100000000000000" | bc -l`
-        		gpsRandomLong=`echo "$gpsRandomLong/100000000000000" | bc -l`
+        		gpsRandomLong=`echo "$gpsRandomLong/10000000000000000" | bc -l`
 
         		lat=`echo "$latInit + $gpsRandomLat" | bc -l | sed -e "s/000000$//"`
-        		long=`echo "$longInit + $gpsRandomLong" | bc -l | sed -e "s/000000$//"`
+        		long=`echo "$longInit + $gpsRandomLong" | bc -l | sed -e "s/0000$//"`
 			
 			timeRandom=`shuf -i 60-900 -n 1`  # Random from 1min to 15mins to change gps position
 			timeTochange=`expr $gpsDateTime + $timeRandom` 
@@ -328,6 +368,8 @@ then
 
 			#-- remove current trip
 			rm -f ${myHome}/current.dateBegin
+		else
+			echo "Error when pushing data"
 		fi
 	else
 		echo "$data"
