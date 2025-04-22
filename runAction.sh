@@ -94,10 +94,10 @@ then
 else
         trip="SOIR"
         endDate="${myDay}T17:30:00.000Z"
-        endDateTime=`date -u +"%s" --date="${myDay} 17:30:00"`
-	endDateSendingData=`date -u +"%s" --date="${myDay} 19:30:00"`
-	registrationDateStart=`date -u +"%s" --date="${myDay} 15:30:00"`
-	registrationDateEnd=`date -u +"%s" --date="${myDay} 16:00:00"`
+        endDateTime=`date -u +"%s" --date="${myDay} 16:30:00"`
+	endDateSendingData=`date -u +"%s" --date="${myDay} 17:30:00"`
+	registrationDateStart=`date -u +"%s" --date="${myDay} 14:30:00"`
+	registrationDateEnd=`date -u +"%s" --date="${myDay} 15:00:00"`
         latOrig=$lat_office
         longOrig=$long_office
 fi
@@ -215,7 +215,7 @@ curl -X POST -d ${data} -A ${userAgent} -b $fileCookie \
 
 ##-- to emulate app
 curl -H "Authorization: Bearer ${token}"  -A ${userAgent} https://xn--changerarapporte-ipb.fr/back-inscription-programme/mon-compte >/dev/null 2>/dev/null
-curl -H "Authorization: Bearer ${token}"  -A ${userAgent} https://xn--changerarapporte-ipb.fr/back-declaration-effacement/jours-autorises >${myHome}/openDays 2>/dev/null
+#curl -H "Authorization: Bearer ${token}"  -A ${userAgent} https://xn--changerarapporte-ipb.fr/back-declaration-effacement/jours-autorises >${myHome}/openDays 2>/dev/null
 curl -H "Authorization: Bearer ${token}"  -A ${userAgent} "https://xn--changerarapporte-ipb.fr/back-restitution-informations/mes-infos/effacements?year=2024&month=9" >/dev/null 2>/dev/null
 curl -H "Authorization: Bearer ${token}"  -A ${userAgent} "https://xn--changerarapporte-ipb.fr/back-restitution-informations/mes-infos/effacements?year=2024&month=10" >/dev/null 2>/dev/null
 curl -H "Authorization: Bearer ${token}"  -A ${userAgent} "https://xn--changerarapporte-ipb.fr/back-restitution-informations/mes-infos/effacements?year=2024&month=11" >/dev/null 2>/dev/null
